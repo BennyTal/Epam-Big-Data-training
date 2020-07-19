@@ -6,7 +6,7 @@ trait Character {
 
   val name:String = {
     val faker = new Faker
-    faker.name.fullName+ "(" + getClass.getName.split('.')(2) + ")"
+    faker.name.fullName+ " (" + getClass.getName.split('.')(1) + ")"
   }
   var power:Int
   var hp: Int
