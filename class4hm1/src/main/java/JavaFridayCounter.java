@@ -1,5 +1,6 @@
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -10,13 +11,13 @@ public class JavaFridayCounter {
 
     public static void printSortedFriday13(int startYear, int endYear){
         //Set-Up : Initializing Dates and Stream Objects.
-        LocalDate start = LocalDate.of(startYear,1,1);
-        LocalDate end = LocalDate.of(endYear,1,1);
-        Stream<LocalDate> stream = start.datesUntil(end);
+        LocalDate start = LocalDate.of(startYear,1,13);
+        LocalDate end = LocalDate.of(endYear,1,13);
+        Stream<LocalDate> stream = start.datesUntil(end, Period.ofMonths(1));
 
         //Streaming Dates objects -> filtering by date and DayOfWeek -> changing shape to year -> grouping by year.
         Map<Integer,Long> results = stream
-                .filter(x -> x.toString().split("-")[2].equals("13") && x.getDayOfWeek() == DayOfWeek.FRIDAY)
+                .filter(x -> x.getDayOfWeek() == DayOfWeek.FRIDAY)
                 .map(LocalDate::getYear)
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
