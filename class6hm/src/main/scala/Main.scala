@@ -1,23 +1,9 @@
 import org.apache.spark.rdd.RDD
+import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{SparkConf, SparkContext}
 
 object Main {
 
-  def lineCounter(lines: RDD[String]): Long ={
-    lines.count()
-  }
-
-  def bostonLongOrders(lines: RDD[String]): Long ={ //To fix
-    lines.filter(s => s.toLowerCase.contains("boston") &&
-      s.split(" ")(2).toInt >= 10).count()
-  }
-
-  def bostonTotalLength(lines: RDD[String]): Double ={
-    lines
-      .filter(_.toLowerCase().contains("boston"))
-      .map(s => s.split(" ")(2).toDouble)
-      .sum
-  }
 
   def bestDrivers(ordersLines: RDD[String], driversLines: RDD[String]): Unit ={
 
@@ -34,6 +20,8 @@ object Main {
 
   }
 
+  case class Order(driverId:Int,city:String,length:Int)
+
 
 
 
@@ -43,13 +31,19 @@ object Main {
     val sc = new SparkContext(conf)
 
     val taxiOrdersLines = sc.textFile("class6hm\\src\\main\\taxi_orders.txt")
+
+    val orders: RDD[Order] = taxiOrdersLines.map{ s =>
+      val values = s.split(" ")
+      Order(values(0).toInt,values(1).toLowerCase(),values(2).toInt)
+    }.persist(StorageLevel.MEMORY_AND_DISK)
+
     val driversLines = sc.textFile("class6hm\\src\\main\\drivers.txt")
 
-//    println(lineCounter(taxiOrdersLines))
-//    println(lineCounter(driversLines))
+    val bostonRDD: RDD[Order] = orders.filter(_.city == "boston").persist()
 
-//    println("Boston long orders: " + bostonLongOrders(taxiOrdersLines))
-//    println("Totabl km Boston: " + bostonTotalLength(taxiOrdersLines))
+    println(bostonRDD.filter(_.length>10))
+    println(bostonRDD.map(_.length).reduce(_+_))
+
 //    bestDrivers(taxiOrdersLines,driversLines)
 
 
