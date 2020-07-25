@@ -39,12 +39,12 @@ object Main {
 
     val driversLines = sc.textFile("class6hm\\src\\main\\drivers.txt")
 
-    val bostonRDD: RDD[Order] = orders.filter(_.city == "boston").persist()
+    val bostonRDD: RDD[Order] = orders.filter(_.city.equals("boston")).persist()
 
-    println(bostonRDD.filter(_.length>10))
+    bostonRDD.filter(_.length>10).foreach(println)
     println(bostonRDD.map(_.length).reduce(_+_))
 
-//    bestDrivers(taxiOrdersLines,driversLines)
+    bestDrivers(taxiOrdersLines,driversLines)
 
 
   }
