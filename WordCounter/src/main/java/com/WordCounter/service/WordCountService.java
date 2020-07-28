@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import scala.Tuple2;
 
+import javax.annotation.PostConstruct;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -15,21 +17,24 @@ import java.util.stream.Collectors;
 
 
 @Service
-public class WordCountService{
+public class WordCountService implements Serializable {
 
     @Autowired
-    JavaSparkContext sc;
+    transient JavaSparkContext sc;
 
-//    line -> line.split("\\s*[^a-zA-Z]+\\s*")
+    Broadcast<List<String>> garbageWordsBroadcast;
+
+    @PostConstruct
+    private void initGarbageWords(){
+        List<String> garbageFile = sc.textFile("WordCounter/src/main/java/com/WordCounter/files/garbage_words.txt")
+                .collect();
+        garbageWordsBroadcast = sc.broadcast(garbageFile);
+    }
+
 
     public Map<String, Long> getCount(String filename ,int top){
 
-        List<String> garbageFile = sc.textFile("WordCounter/src/main/java/com/WordCounter/files/garbage_words.txt")
-                .collect();
-        Broadcast<List<String>> garbageWordsBroadcast = sc.broadcast(garbageFile);
-
         JavaRDD<String> text= sc.textFile("WordCounter/src/main/java/com/WordCounter/files/" + filename + ".txt");
-
 
         List<Tuple2<Long, String>> take = text
                 .map(sentence -> sentence.replaceAll("[^a-zA-Z\\s]", "").toLowerCase())
